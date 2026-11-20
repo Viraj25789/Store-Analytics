@@ -58,6 +58,16 @@ def load_and_clean_data(file_path=None):
     return df
 
 
+def _monthly_sales(df):
+    """Aggregate by calendar month, inserting zero-sales months when absent."""
+    if df.empty:
+        return pd.Series(dtype=float)
+    month_values = pd.to_datetime(df["Date"]).dt.to_period("M")
+    monthly = df.assign(_month=month_values).groupby("_month")["Sales"].sum().sort_index()
+    full_range = pd.period_range(monthly.index.min(), monthly.index.max(), freq="M")
+    return monthly.reindex(full_range, fill_value=0.0)
+
+
 def get_kpis(df):
     """Calculate dashboard KPIs using the latest month present in the data."""
     total_sales = float(df["Sales"].sum()) if not df.empty else 0.0
@@ -78,7 +88,7 @@ def get_kpis(df):
         if not region_profit.empty:
             best_region = region_profit.idxmax()
 
-        monthly_sales = df.groupby("Month")["Sales"].sum().sort_index()
+        monthly_sales = _monthly_sales(df)
         if not monthly_sales.empty:
             latest_month = str(monthly_sales.index[-1])
             current_month_sales = float(monthly_sales.iloc[-1])
@@ -109,7 +119,8 @@ def get_kpis(df):
 
 def get_charts(df):
     """Build the four Plotly visualizations used by the dashboard."""
-    monthly = df.groupby("Month")["Sales"].sum().reset_index()
+    monthly = _monthly_sales(df).rename_axis("Month").reset_index()
+    monthly["Month"] = monthly["Month"].astype(str)
     region = df.groupby("Region")["Profit"].sum().reset_index()
     category = df.groupby("Category")["Sales"].sum().reset_index()
     subcat = (
@@ -152,7 +163,7 @@ def get_charts(df):
 
 def get_sales_forecast(df):
     """Return a simple linear trend estimate for the month after the data."""
-    monthly = df.groupby("Month")["Sales"].sum().sort_index()
+    monthly = _monthly_sales(df)
     if len(monthly) < 2:
         return None
 
