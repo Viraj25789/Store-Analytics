@@ -32,7 +32,7 @@
 <div id="dashboard-content" class="container bg-light p-4 rounded">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold m-0">Executive Dashboard</h3>
-        <span class="text-muted">Data updated for current fiscal year</span>
+        <span class="text-muted">Data through {{ kpis.latest_month }}</span>
     </div>
     
     <div class="row mb-3">
@@ -47,7 +47,7 @@
         <div class="col-md-4">
             <div class="card text-white bg-info mb-3 shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h6 class="card-title text-uppercase mb-1">Current Month Sales</h6>
+                    <h6 class="card-title text-uppercase mb-1">Latest Month in Data</h6>
                     <h2 class="card-text fw-bold">₹{{ kpis.current_month_sales }}</h2>
                     <small class="fw-bold">
                         {% if kpis.mom_growth > 0 %}
@@ -75,8 +75,13 @@
         <div class="col-md-4">
             <div class="card text-dark bg-warning mb-3 shadow-sm border-0 h-100">
                 <div class="card-body">
-                    <h6 class="card-title text-uppercase mb-1">Expected Sales (Next Month)</h6>
+                    <h6 class="card-title text-uppercase mb-1">Trend Estimate (Next Month)</h6>
+                    {% if forecast is not none %}
                     <h2 class="card-text fw-bold">₹{{ forecast }}</h2>
+                    {% else %}
+                    <h2 class="card-text fw-bold">N/A</h2>
+                    <small class="text-muted">At least two months of data are needed.</small>
+                    {% endif %}
                 </div>
             </div>
         </div>
