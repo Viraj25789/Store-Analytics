@@ -119,7 +119,7 @@ def get_kpis(df):
 
 def get_charts(df):
     """Build the four Plotly visualizations used by the dashboard."""
-    monthly = _monthly_sales(df).rename_axis("Month").reset_index()
+    monthly = _monthly_sales(df).rename("Sales").rename_axis("Month").reset_index()
     monthly["Month"] = monthly["Month"].astype(str)
     region = df.groupby("Region")["Profit"].sum().reset_index()
     category = df.groupby("Category")["Sales"].sum().reset_index()
